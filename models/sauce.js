@@ -16,4 +16,4 @@ const sauceSchema = mongoose.Schema({
 });
 
 // pour pouvoir l'utiliser dans la BDD
-module.exports = mongoose.model("sauce", sauceSchema);
+module.exports = mongoose.model("Sauce", sauceSchema);
