@@ -1,14 +1,20 @@
 // logique métier ie le corps des fonctions / middlewares
 
 // on importe nos modèles
+const sauce = require("../models/sauce");
 const Sauce = require("../models/sauce");
 
 exports.createSauce = (req, res, next) => {
+    // pour extraire l'objet Json de la sauce
+    const sauceObject = JSON.parse(req.body.sauce);
     const sauce = new Sauce({
         // opérateur spread ...
         // va chercher tous les éléments dans le body et les intègre à chaque élément de l'objet Sauce
         // sans besoin de préciser name: req.body.name, etc...
-        ...req.body
+        ...sauceObject,
+        // on modifie l'url de l'image en le générant comme suit :
+        // http ou https, ://, la racine du serveur, /images/ le nom du fichier
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     });
     // on enregistre dans la BDD
     sauce.save()
@@ -19,15 +25,27 @@ exports.createSauce = (req, res, next) => {
 };
 
 exports.updateSauce = (req, res, next) => {
+    // Y a t il une image avec cette maj ?
+    
     Sauce.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id}) // ancien objet, nouvel objet avec le bon paramètre
         .then(() => res.status(200).json({ message : "Sauce mise à jour"}))
         .catch(error => res.status(400).json({ error}));
 };
 
 exports.deleteSauce = (req, res, next) => {
-    Sauce.deleteOne({_id: req.params.id})
-        .then(() => res.status(200).json({ message : 'Sauce supprimée'}))
-        .catch(error => res.status(400).json({ error}));
+    Sauce.findOne({_id: req.params.id})
+        .then((sauce) => {
+            if(!sauce) {
+                return res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
+            }
+            if(sauce.userId !== req.auth.userId) {
+                return res.status(400).json({error: new Error("Requête non autorisée")}); // si le user Id n'est pas le bon
+            }
+            // si on est ici ie on a une sauce et le user Id est le bon donc
+            Sauce.deleteOne({_id: req.params.id})
+                .then(() => res.status(200).json({ message : 'Sauce supprimée'}))
+                .catch(error => res.status(400).json({ error}));
+        })
 };
 
 exports.getOneSauce = (req, res, next) => {

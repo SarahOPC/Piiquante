@@ -2,6 +2,8 @@
 const express = require("express"); // framework node pour créer des serveurs
 const mongoose = require("mongoose"); // permet de faire le lien entre BDD (MongoDB) et l'appli
 const app = express();
+// nous donne accès au chemin du système de fichiers
+const path = require("path");
 
 // on importe les routers
 const sauceRoutes = require("./routes/sauce");
@@ -27,8 +29,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// pour toutes les requêtes envoyées à /images, on sert ce dossier statique image
+app.use('/images', express.static(path.join(__dirname, 'images'))); // nom du dossier + images
+
 // pour cette route là, va voir dans sauceRoutes donc dans le router
 app.use('/api/sauce', sauceRoutes);
+// pour cette route là, va voir dans userRoutes donc dans le router
 app.use('/api/auth', userRoutes);
 
 // on exporte app.js

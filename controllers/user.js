@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+// permet de créer des tokens d'identification et de les vérifier
+const jwt = require("jsonwebtoken");
 
 
 exports.signup = (req, res, next) => {
@@ -37,7 +39,15 @@ exports.login = (req, res, next) => {
                 // sinon comparaison est bonne donc on valide la connexion et on renvoit un id et un token
                 res.status(200).json({
                     userId: user._id,
-                    token: 'TOKEN'
+                    // permet de vérifier que les requêtes sont authentifiées et donc autorisées
+                    token: jwt.sign(
+                        // 1er argument : les données à encoder ie le payload
+                        {userId: user._id}, // pour être sur que la requête corresponde à ce user id
+                        // 2ème argument : clé secrète pour l'encodage
+                        "RANDOM_TOKEN_SECRET",
+                        // 3ème argument : durée de validité du token
+                        {expiresIn: "24h"}
+                    )
                 });
             })
             .catch(error => res.status(500).json({error}));
