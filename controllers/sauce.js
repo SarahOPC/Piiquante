@@ -26,6 +26,9 @@ exports.createSauce = (req, res, next) => {
 
 exports.updateSauce = (req, res, next) => {
     // Y a t il une image avec cette maj ?
+    // si oui, on aura un req.file
+    // sinon, on aura juste un objet
+
     
     Sauce.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id}) // ancien objet, nouvel objet avec le bon paramètre
         .then(() => res.status(200).json({ message : "Sauce mise à jour"}))
