@@ -1,7 +1,9 @@
 // logique métier ie le corps des fonctions / middlewares
 
+// file System donne accès au système de fichiers et permet de le modifier
+const fs = require("fs");
+
 // on importe nos modèles
-const sauce = require("../models/sauce");
 const Sauce = require("../models/sauce");
 
 exports.createSauce = (req, res, next) => {
@@ -9,6 +11,7 @@ exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
     const sauce = new Sauce({
         // opérateur spread ...
+        // fait une copie de l'objet pour modifier la copie et non l'objet
         // va chercher tous les éléments dans le body et les intègre à chaque élément de l'objet Sauce
         // sans besoin de préciser name: req.body.name, etc...
         ...sauceObject,
@@ -29,8 +32,15 @@ exports.updateSauce = (req, res, next) => {
     // si oui, on aura un req.file
     // sinon, on aura juste un objet
 
-    
-    Sauce.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id}) // ancien objet, nouvel objet avec le bon paramètre
+    const sauceObject = req.file ? // req.file existe -t- il ? oui : non
+    {
+        ...JSON.parse(req.body.sauce), // on récupère toutes les informations de sauce qui sont dans la requête
+        // et on génère l'image
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
+
+    } : {...req.body};
+
+    Sauce.updateOne({_id: req.params.id}, {...sauceObject, _id: req.params.id}) // ancien objet, nouvel objet avec le bon paramètre
         .then(() => res.status(200).json({ message : "Sauce mise à jour"}))
         .catch(error => res.status(400).json({ error}));
 };
@@ -45,12 +55,17 @@ exports.deleteSauce = (req, res, next) => {
                 return res.status(400).json({error: new Error("Requête non autorisée")}); // si le user Id n'est pas le bon
             }
             // si on est ici ie on a une sauce et le user Id est le bon donc
-            Sauce.deleteOne({_id: req.params.id})
-                .then(() => res.status(200).json({ message : 'Sauce supprimée'}))
-                .catch(error => res.status(400).json({ error}));
+            // on va chercher l'image pour la supprimer en même temps
+            const filename = sauce.imageUrl.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Sauce.deleteOne({ _id: req.params.id })
+                    .then(() => res.status(200).json({ message: 'Sauce supprimé !'}))
+                    .catch(error => res.status(400).json({ error }));
+             });
         })
+        .catch(error => res.status(500).json({ error }));
 };
-
+            
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({_id: req.params.id})
         // renvoit la sauce trouvée dans la BDD

@@ -25,8 +25,8 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
     // en premier lieu, on cherche le user dans la BDD grâce à son email
     User.findOne({email: req.body.email}) // on compare l'email trouvé à celui envoyé dans la requête
-    // on doit vérifier si on a ou pas récupéré un user
-    .then(user => {
+        // on doit vérifier si on a ou pas récupéré un user
+        .then(user => {
         if(!user) {
             return res.status(401).json({ error : "Utilisateur non trouvé"});
         }

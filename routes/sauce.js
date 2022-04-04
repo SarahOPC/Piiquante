@@ -23,4 +23,4 @@ router.get('/', auth, sauceController.getAllSauces);
 
 // on exporte le router
 module.exports = router;
-// /api/sauce, route de base d'enregistrement du router est remplacé par / car nous sommes déjà dans le router
+// /api/sauces, route de base d'enregistrement du router est remplacé par / car nous sommes déjà dans le router
