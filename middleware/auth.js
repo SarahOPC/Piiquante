@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
         //  revient à ça = req.userId = userId;
         // si j'ai un userId dans la requête, je le compare avec celui récupéré du token
         if(req.body.userId && req.body.userId !== userId) { // si j'ai un userId dans la requête et qu'il est différent de celui du token
-            throw "User Id non valable";
+            throw "403: unauthorized request";
         } else {
             next(); // sinon, on peut executer les autres middlewares en jeu
         }
