@@ -82,65 +82,79 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 exports.ratingSauce = (req, res, next) => {
-    const like = req.body.like;
-    const dislike = req.body.dislike;
+    const likes = req.body.likes;
     const userId = req.body.userId;
     const sauceId = req.params.id;
-    const usersLiked = [userId];
-    const usersDisliked = [userId];
-    
+
     // je vérifie si la sauce existe
     Sauce.findOne({_id: sauceId})
-        .then((sauce) => {
+        .then(sauce => {
             if(!sauce) {
-                return res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
+                res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
             }
+    
             // si la sauce existe, j'évalue les différentes possibilités de like / dislike
-            switch(like) {
-                case 1: // la personne aime
-                    Sauce.updateOne({_id: sauceId},
-                    {$push : {usersLiked: userId}, // j'ajoute le userId dans le tableau like
-                    $inc: {like: +1}}) // j'incrémente les likes de 1
-                        .then(() => res.status(200).json({ message: 'Sauce bien aimée !'}))
-                        .catch(error => res.status(400).json({error}));
-                    break;
-
-                case -1: // la personne n'aime pas
-                    Sauce.updateOne({_id: sauceId},
-                    {$push : {usersDisliked: userId}, // j'ajoute le userId dans le tableau dislike
-                    $inc: {dislike: +1}}) // j'incrémente les dislikes de 1
-                        .then(() => res.status(200).json({ message: 'Sauce pas aimée !'}))
-                        .catch(error => res.status(400).json({error}));                
-                    break;
-
-                case 0: // la personne ne donne pas d'avis ou le retire
-                    switch(usersLiked.includes(userId)){ // je regarde si le userId est dans le tableau like
-                        case true: // si oui
-                            for(let i = 0; i < usersLiked.length; i ++){
-                                if(usersLiked[i] === userId){
-                                    Sauce.updateOne({_id: sauceId},
-                                    {$pull : {usersLiked: userId}, // je retire le userId du tableau like
-                                    $inc: {like: -1}}) // et je décrémente de 1 les likes
-                                        .then(() => res.status(200).json())
-                                        .catch(error => res.status(400).json({error}));
-                                }
-                            }
-                            break;
-
-                        case false: // sinon
-                            for(let i = 0; i < usersDisliked.length; i ++){
-                                if(usersDisliked[i] === userId){
-                                    Sauce.updateOne({_id: sauceId},
-                                    {$pull : {usersDisliked: userId}, // je retire le userId du tableau dislike
-                                    $inc: {dislike: -1}}) // et je décrémente de 1 les dislikes
-                                        .then(() => res.status(200).json())
-                                        .catch(error => res.status(400).json({error}));
-                                }
-                            }
-                            break;
+            // la personne aime
+            if(likes === 1) {
+            Sauce.updateOne({_id: sauceId}) // je cherche la bonne sauce pour la mettre à jour
+                .then(sauce => {
+                    // le userId n'est pas dans le tableau like pour cette sauce là
+                    if (sauce.usersLiked.includes(userId)) {
+                    console.error("Vous avez déjà donné votre avis sur cette sauce");
                     }
-                    break;
-            }
+                    // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
+                    else {
+                        Sauce.updateOne({_id: sauceId},
+                            {$inc: {likes: 1},
+                            $push: {usersLiked: userId}})
+                            .then(() => res.status(200).json({message: "Sauce bien aimée"}))
+                            .catch(error => res.status(400).json({error}));
+                    }})
+                .catch(error => res.status(400).json({error}));
+            
+            // la personne n'aime pas
+            } else if (req.body.likes === -1) {
+            Sauce.findOne({_id: sauceId})
+                .then(sauce => {
+                    // le userId n'est pas dans le tableau dislike
+                    if (sauce.usersDisliked.includes(userId)) {
+                    console.error("Vous avez déjà donné votre avis sur cette sauce");
+                    }
+                    // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
+                    else {
+                    Sauce.updateOne({_id: sauceId},
+                        {$inc: {dislikes: 1},
+                        $push: {usersDisliked: req.body.userId}})
+                        .then(() => res.status(200).json({message: "Sauce pas aimée"}))
+                        .catch(error => res.status(400).json({ error }));
+                    }
+                })
+                .catch(error => res.status(400).json({error}));
+            // si like === 0
+            } else { 
+            Sauce.findOne({_id: sauceId})
+                .then(sauce => {
+                    // si le userId est dans le tableau like
+                    if (sauce.usersLiked.includes(userId)) {
+                    // on le retire du tableau et on décrémente de 1 les likes
+                    Sauce.updateOne({_id: req.params.id},
+                        {$pull: {usersLiked: req.body.userId},
+                        $inc: {likes: -1}})
+                        .then(() => res.status(200).json({message: 'Like supprimé !'}))
+                        .catch(error => res.status(400).json({error}));
+                }
+                    // si le userId est dans le tableau dislike
+                    else if (sauce.usersDisliked.includes(userId)) {
+                    // on le retire du tableau et on décrémente de 1 les dislikes
+                    Sauce.updateOne({_id: sauceId},
+                        {$pull: {usersDisliked: req.body.userId},
+                        $inc: {dislikes: -1}})
+                        .then(() => res.status(200).json({message: 'Dislike supprimé !'}))
+                        .catch(error => res.status(400).json({error}));
+                    }
+                })
+                .catch(error => res.status(400).json({error}));
+            }                
         })
         .catch(error => res.status(404).json({error}))
-};
+}
