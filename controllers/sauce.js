@@ -131,8 +131,8 @@ exports.ratingSauce = (req, res, next) => {
                             for(let i = 0; i < usersDisliked.length; i ++){
                                 if(usersDisliked[i] === userId){
                                     Sauce.updateOne({_id: sauceId},
-                                    {$pull : {usersLiked: userId}, // je retire le userId du tableau dislike
-                                    $inc: {like: -1}}) // et je décrémente de 1 les dislikes
+                                    {$pull : {usersDisliked: userId}, // je retire le userId du tableau dislike
+                                    $inc: {dislike: -1}}) // et je décrémente de 1 les dislikes
                                         .then(() => res.status(200).json())
                                         .catch(error => res.status(400).json({error}));
                                 }
