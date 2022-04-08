@@ -106,31 +106,30 @@ exports.ratingSauce = (req, res, next) => {
                 // cela veut dire que la personne unlike
                 function unliked() {
                     // on le retire du tableau et on décrémente de 1 les likes
-                    console.log("unlikes de la sauce = " + sauce.likes);
                     sauce.likes = sauce.likes - 1;
-                    console.log("Re unlikes de la sauce = " + sauce.likes);
                     let myIndex = tabUsersLiked.indexOf(userId);
                     tabUsersLiked.splice(myIndex, 1);
                     console.log("tableau splicé des unlikes de la sauce = " + tabUsersLiked);
-                    sauce.save();
                     console.log("Like supprimé");
                     console.log("je unlike");
+                    sauce.save()
+                    .then(() => res.status(201).json())
+                    .catch(error => res.status(400).json({error}));
                 };
                 unliked();
             } else {
                 // la personne aime
                 // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
                 function liked() {
-                    console.log("userId de la req = " + req.body.userId);
-                    console.log("likes de la sauce = " + sauce.likes);
                     sauce.likes = sauce.likes + 1;
-                    console.log("Re likes de la sauce = " + sauce.likes);
                     console.log("tableau des likes de la sauce = " + tabUsersLiked);
                     //Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
-                    sauce.save({$addToSet: {tabUsersLiked: userId}, $inc: {likes: 1}});
-                    console.log("tableau des likes de la sauce = " + tabUsersLiked);
+                    console.log("tableau augmenté des likes de la sauce = " + tabUsersLiked);
                     console.log("Sauce appréciée");}
                     console.log("je like");
+                    sauce.save({$addToSet: {tabUsersLiked: userId}, $inc: {likes: 1}})
+                    .then(() => res.status(201).json())
+                    .catch(error => res.status(400).json({error}));
                 };
                 liked();
                 
@@ -140,27 +139,28 @@ exports.ratingSauce = (req, res, next) => {
                 function undisliked() {
                     // on le retire du tableau et on décrémente de 1 les dislikes
                     sauce.dislikes = sauce.dislikes - 1;
-                    console.log("undislikes de la sauce = " + sauce.Dislikes);
                     let myIndex = tabUsersDisliked.indexOf(userId);
                     tabUsersDisliked.splice(myIndex, 1);
                     console.log("tableau splicé des undislikes de la sauce = " + tabUsersDisliked);
-                    sauce.save();
                     console.log("Dislike supprimé");
                     console.log("je undislike");
+                    sauce.save()
+                    .then(() => res.status(201).json())
+                    .catch(error => res.status(400).json({error}));
                 };
                 undisliked();
             } else {
                 // la personne n'aime pas
                 // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
                 function disliked() {
-                    console.log("undislikes de la sauce = " + sauce.dislikes);
                     sauce.dislikes = sauce.dislikes + 1;
-                    console.log("Re undislikes de la sauce = " + sauce.dislikes);
                     // Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
-                    sauce.save({$addToSet: {tabUsersDisliked: userId}, $inc: {dislikes: 1}});
-                    console.log("tableau des dislikes de la sauce = " + tabUsersDisliked);
+                    console.log("tableau augmenté des dislikes de la sauce = " + tabUsersDisliked);
                     console.log("Sauce pas appréciée");
                     console.log("je dislike");
+                    sauce.save({$addToSet: {tabUsersDisliked: userId}, $inc: {dislikes: 1}})
+                    .then(() => res.status(201).json())
+                    .catch(error => res.status(400).json({error}));
                 };
                 disliked();
             }
