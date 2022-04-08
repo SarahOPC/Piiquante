@@ -87,81 +87,84 @@ exports.ratingSauce = (req, res, next) => {
     const likes = req.body.like;
     const userId = req.body.userId;
     const sauceId = req.params.id;
-    console.log("likes="+req.body.like);
+    console.log("like de la req = " + req.body.like);
+    console.log("userId de la req = " + req.body.userId);
+    console.log("id de la sauce = " + req.params.id);
     // je vérifie si la sauce existe
-    Sauce.findOne({_id: sauceId})
-        .then(sauce => {
-            if(!sauce) {
-                return res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
-            }
-    console.log("likes="+sauce.likes);
-            // si la sauce existe, j'évalue les différentes possibilités de like / dislike
-            // la personne aime
-            if(likes === 1) {
-                console.log("sauce.likes="+sauce.likes);
-                sauce.likes = sauce.likes + 1;
-                sauce.save();
-                /*
-            Sauce.updateOne({_id: sauceId}) // je cherche la bonne sauce pour la mettre à jour
-                .then(sauce => {
-                    console.log("UpdateOne");
-                    // le userId n'est pas dans le tableau like pour cette sauce là
-                    if (sauce.usersLiked.includes(userId)) {
-                        console.error("Vous avez déjà donné votre avis sur cette sauce");
-                    }
-                    // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
-                    else {
-                        Sauce.updateOne({_id: sauceId},
-                            {$inc: {likes: 1},
-                            $push: {usersLiked: userId}})
-                            .then(() => res.status(200).json({message: "Sauce bien aimée"}))
-                            .catch(error => res.status(400).json({error}));
-                    }})
-                .catch(error => res.status(400).json({error}));
-            */
-            // la personne n'aime pas
-            } else if (req.body.likes === -1) {
-            Sauce.findOne({_id: sauceId})
-                .then(sauce => {
-                    // le userId n'est pas dans le tableau dislike
-                    if (sauce.usersDisliked.includes(userId)) {
-                    console.error("Vous avez déjà donné votre avis sur cette sauce");
-                    }
-                    // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
-                    else {
-                    Sauce.updateOne({_id: sauceId},
-                        {$inc: {dislikes: 1},
-                        $push: {usersDisliked: req.body.userId}})
-                        .then(() => res.status(200).json({message: "Sauce pas aimée"}))
-                        .catch(error => res.status(400).json({ error }));
-                    }
-                })
-                .catch(error => res.status(400).json({error}));
-            // si like === 0
-            } else { 
-            Sauce.findOne({_id: sauceId})
-                .then(sauce => {
-                    // si le userId est dans le tableau like
-                    if (sauce.usersLiked.includes(userId)) {
+    Sauce.findOne({_id: sauceId}) // je cherche la bonne sauce pour la mettre à jour
+    .then(sauce => {    
+        let tabUsersLiked = sauce.usersLiked;
+        let tabUsersDisliked = sauce.usersDisliked;
+        console.log("tableau des likes = " + tabUsersLiked);
+        console.log("tableau des dislikes = " + tabUsersDisliked);
+
+        // j'évalue les différentes possibilités de like / dislike
+        
+        if(likes === 1) {
+            if(tabUsersLiked.includes(userId)) {
+                // si le userId est dans le tableau like pour cette sauce là
+                // cela veut dire que la personne unlike
+                function unliked() {
                     // on le retire du tableau et on décrémente de 1 les likes
-                    Sauce.updateOne({_id: req.params.id},
-                        {$pull: {usersLiked: req.body.userId},
-                        $inc: {likes: -1}})
-                        .then(() => res.status(200).json({message: 'Like supprimé !'}))
-                        .catch(error => res.status(400).json({error}));
-                }
-                    // si le userId est dans le tableau dislike
-                    else if (sauce.usersDisliked.includes(userId)) {
+                    console.log("unlikes de la sauce = " + sauce.likes);
+                    sauce.likes = sauce.likes - 1;
+                    console.log("Re unlikes de la sauce = " + sauce.likes);
+                    let myIndex = tabUsersLiked.indexOf(userId);
+                    tabUsersLiked.splice(myIndex, 1);
+                    console.log("tableau splicé des unlikes de la sauce = " + tabUsersLiked);
+                    sauce.save();
+                    console.log("Like supprimé");
+                    console.log("je unlike");
+                };
+                unliked();
+            } else {
+                // la personne aime
+                // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
+                function liked() {
+                    console.log("userId de la req = " + req.body.userId);
+                    console.log("likes de la sauce = " + sauce.likes);
+                    sauce.likes = sauce.likes + 1;
+                    console.log("Re likes de la sauce = " + sauce.likes);
+                    console.log("tableau des likes de la sauce = " + tabUsersLiked);
+                    //Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
+                    sauce.save({$addToSet: {tabUsersLiked: userId}, $inc: {likes: 1}});
+                    console.log("tableau des likes de la sauce = " + tabUsersLiked);
+                    console.log("Sauce appréciée");}
+                    console.log("je like");
+                };
+                liked();
+                
+        } else if (likes === - 1) {
+            if(tabUsersDisliked.includes(userId)) {
+                // la personne undislike
+                function undisliked() {
                     // on le retire du tableau et on décrémente de 1 les dislikes
-                    Sauce.updateOne({_id: sauceId},
-                        {$pull: {usersDisliked: req.body.userId},
-                        $inc: {dislikes: -1}})
-                        .then(() => res.status(200).json({message: 'Dislike supprimé !'}))
-                        .catch(error => res.status(400).json({error}));
-                    }
-                })
-                .catch(error => res.status(400).json({error}));
-            }                
-        })
-        .catch(error => res.status(404).json({error}))
+                    sauce.dislikes = sauce.dislikes - 1;
+                    console.log("undislikes de la sauce = " + sauce.Dislikes);
+                    let myIndex = tabUsersDisliked.indexOf(userId);
+                    tabUsersDisliked.splice(myIndex, 1);
+                    console.log("tableau splicé des undislikes de la sauce = " + tabUsersDisliked);
+                    sauce.save();
+                    console.log("Dislike supprimé");
+                    console.log("je undislike");
+                };
+                undisliked();
+            } else {
+                // la personne n'aime pas
+                // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
+                function disliked() {
+                    console.log("undislikes de la sauce = " + sauce.dislikes);
+                    sauce.dislikes = sauce.dislikes + 1;
+                    console.log("Re undislikes de la sauce = " + sauce.dislikes);
+                    // Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
+                    sauce.save({$addToSet: {tabUsersDisliked: userId}, $inc: {dislikes: 1}});
+                    console.log("tableau des dislikes de la sauce = " + tabUsersDisliked);
+                    console.log("Sauce pas appréciée");
+                    console.log("je dislike");
+                };
+                disliked();
+            }
+        }            
+    })
+    .catch(error => res.status(404).json({error}))
 }
