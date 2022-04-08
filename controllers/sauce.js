@@ -17,7 +17,9 @@ exports.createSauce = (req, res, next) => {
         ...sauceObject,
         // on modifie l'url de l'image en le générant comme suit :
         // http ou https, ://, la racine du serveur, /images/ le nom du fichier
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+        likes: 0,
+        dislikes: 0
     });
     // on enregistre dans la BDD
     sauce.save()
@@ -59,7 +61,7 @@ exports.deleteSauce = (req, res, next) => {
             const filename = sauce.imageUrl.split('/images/')[1];
             fs.unlink(`images/${filename}`, () => {
                 Sauce.deleteOne({ _id: req.params.id })
-                    .then(() => res.status(200).json({ message: 'Sauce supprimé !'}))
+                    .then(() => res.status(200).json({ message: 'Sauce supprimée !'}))
                     .catch(error => res.status(400).json({error}));
              });
         })
@@ -82,25 +84,30 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 exports.ratingSauce = (req, res, next) => {
-    const likes = req.body.likes;
+    const likes = req.body.like;
     const userId = req.body.userId;
     const sauceId = req.params.id;
-
+    console.log("likes="+req.body.like);
     // je vérifie si la sauce existe
     Sauce.findOne({_id: sauceId})
         .then(sauce => {
             if(!sauce) {
-                res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
+                return res.status(401).json({error: new Error("Sauce non trouvée")}); // si la sauce n'existe pas
             }
-    
+    console.log("likes="+sauce.likes);
             // si la sauce existe, j'évalue les différentes possibilités de like / dislike
             // la personne aime
             if(likes === 1) {
+                console.log("sauce.likes="+sauce.likes);
+                sauce.likes = sauce.likes + 1;
+                sauce.save();
+                /*
             Sauce.updateOne({_id: sauceId}) // je cherche la bonne sauce pour la mettre à jour
                 .then(sauce => {
+                    console.log("UpdateOne");
                     // le userId n'est pas dans le tableau like pour cette sauce là
                     if (sauce.usersLiked.includes(userId)) {
-                    console.error("Vous avez déjà donné votre avis sur cette sauce");
+                        console.error("Vous avez déjà donné votre avis sur cette sauce");
                     }
                     // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
                     else {
@@ -111,7 +118,7 @@ exports.ratingSauce = (req, res, next) => {
                             .catch(error => res.status(400).json({error}));
                     }})
                 .catch(error => res.status(400).json({error}));
-            
+            */
             // la personne n'aime pas
             } else if (req.body.likes === -1) {
             Sauce.findOne({_id: sauceId})
