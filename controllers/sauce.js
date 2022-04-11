@@ -95,76 +95,62 @@ exports.ratingSauce = (req, res, next) => {
     .then(sauce => {    
         let tabUsersLiked = sauce.usersLiked;
         let tabUsersDisliked = sauce.usersDisliked;
-        console.log("tableau des likes = " + tabUsersLiked);
-        console.log("tableau des dislikes = " + tabUsersDisliked);
 
         // j'évalue les différentes possibilités de like / dislike
-        
-        if(likes === 1) {
-            if(tabUsersLiked.includes(userId)) {
-                // si le userId est dans le tableau like pour cette sauce là
-                // cela veut dire que la personne unlike
-                function unliked() {
-                    // on le retire du tableau et on décrémente de 1 les likes
-                    sauce.likes = sauce.likes - 1;
-                    let myIndex = tabUsersLiked.indexOf(userId);
-                    tabUsersLiked.splice(myIndex, 1);
-                    console.log("tableau splicé des unlikes de la sauce = " + tabUsersLiked);
-                    console.log("Like supprimé");
-                    console.log("je unlike");
-                    sauce.save()
-                    .then(() => res.status(201).json())
-                    .catch(error => res.status(400).json({error}));
-                };
-                unliked();
-            } else {
+        switch(likes) {
+            case 1:
                 // la personne aime
                 // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
-                function liked() {
-                    sauce.likes = sauce.likes + 1;
-                    console.log("tableau des likes de la sauce = " + tabUsersLiked);
-                    //Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
-                    console.log("tableau augmenté des likes de la sauce = " + tabUsersLiked);
-                    console.log("Sauce appréciée");}
-                    console.log("je like");
-                    sauce.save({$addToSet: {tabUsersLiked: userId}, $inc: {likes: 1}})
+                tabUsersLiked.push(userId);
+                sauce.likes = sauce.likes + 1;
+                console.log("je like");
+                sauce.save()
                     .then(() => res.status(201).json())
                     .catch(error => res.status(400).json({error}));
-                };
-                liked();
-                
-        } else if (likes === - 1) {
-            if(tabUsersDisliked.includes(userId)) {
-                // la personne undislike
-                function undisliked() {
-                    // on le retire du tableau et on décrémente de 1 les dislikes
-                    sauce.dislikes = sauce.dislikes - 1;
-                    let myIndex = tabUsersDisliked.indexOf(userId);
-                    tabUsersDisliked.splice(myIndex, 1);
-                    console.log("tableau splicé des undislikes de la sauce = " + tabUsersDisliked);
-                    console.log("Dislike supprimé");
-                    console.log("je undislike");
-                    sauce.save()
-                    .then(() => res.status(201).json())
-                    .catch(error => res.status(400).json({error}));
-                };
-                undisliked();
-            } else {
+                break;
+            case -1 :
                 // la personne n'aime pas
                 // on met à jour la sauce dans la BDD (userId dans tableau like et nombre de likes)
-                function disliked() {
-                    sauce.dislikes = sauce.dislikes + 1;
-                    // Si l’on ne souhaite pas de doublon, il existe l’opérateur $addToSet qui assure cette fonction.
-                    console.log("tableau augmenté des dislikes de la sauce = " + tabUsersDisliked);
-                    console.log("Sauce pas appréciée");
-                    console.log("je dislike");
-                    sauce.save({$addToSet: {tabUsersDisliked: userId}, $inc: {dislikes: 1}})
+                tabUsersDisliked.push(userId);
+                sauce.dislikes = sauce.dislikes + 1;
+                console.log("je dislike");
+                sauce.save()
                     .then(() => res.status(201).json())
                     .catch(error => res.status(400).json({error}));
-                };
-                disliked();
-            }
-        }            
+                break;
+            case 0:
+                if(tabUsersLiked.includes(userId)) {
+                    // si le userId est dans le tableau like pour cette sauce là
+                    // cela veut dire que la personne unlike
+                    function unliked() {
+                        // on le retire du tableau et on décrémente de 1 les likes
+                        sauce.likes = sauce.likes - 1;
+                        let myIndex = tabUsersLiked.indexOf(userId);
+                        tabUsersLiked.splice(myIndex, 1);
+                        console.log("Like supprimé");
+                        console.log("je unlike");
+                        sauce.save()
+                            .then(() => res.status(201).json())
+                            .catch(error => res.status(400).json({error}));
+                    };
+                    unliked();
+                } else if(tabUsersDisliked.includes(userId)) {
+                    // la personne undislike
+                    function undisliked() {
+                        // on le retire du tableau et on décrémente de 1 les dislikes
+                        sauce.dislikes = sauce.dislikes - 1;
+                        let myIndex = tabUsersDisliked.indexOf(userId);
+                        tabUsersDisliked.splice(myIndex, 1);
+                        console.log("Dislike supprimé");
+                        console.log("je undislike");
+                        sauce.save()
+                            .then(() => res.status(201).json())
+                            .catch(error => res.status(400).json({error}));
+                    };
+                    undisliked();
+                }
+                break;
+        }
     })
     .catch(error => res.status(404).json({error}))
 }
