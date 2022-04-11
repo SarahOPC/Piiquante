@@ -105,7 +105,7 @@ exports.ratingSauce = (req, res, next) => {
                 sauce.likes = sauce.likes + 1;
                 console.log("je like");
                 sauce.save()
-                    .then(() => res.status(201).json())
+                    .then(() => res.status(201).json({ message : "Sauce likée"}))
                     .catch(error => res.status(400).json({error}));
                 break;
             case -1 :
@@ -115,7 +115,7 @@ exports.ratingSauce = (req, res, next) => {
                 sauce.dislikes = sauce.dislikes + 1;
                 console.log("je dislike");
                 sauce.save()
-                    .then(() => res.status(201).json())
+                    .then(() => res.status(201).json({ message : "Sauce dislikée"}))
                     .catch(error => res.status(400).json({error}));
                 break;
             case 0:
@@ -130,7 +130,7 @@ exports.ratingSauce = (req, res, next) => {
                         console.log("Like supprimé");
                         console.log("je unlike");
                         sauce.save()
-                            .then(() => res.status(201).json())
+                            .then(() => res.status(201).json({ message : "Sauce unlikée"}))
                             .catch(error => res.status(400).json({error}));
                     };
                     unliked();
@@ -144,7 +144,7 @@ exports.ratingSauce = (req, res, next) => {
                         console.log("Dislike supprimé");
                         console.log("je undislike");
                         sauce.save()
-                            .then(() => res.status(201).json())
+                            .then(() => res.status(201).json({ message : "Sauce undislikée"}))
                             .catch(error => res.status(400).json({error}));
                     };
                     undisliked();

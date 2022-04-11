@@ -6,6 +6,26 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 
+//sécurité
+let helmet = require('helmet');
+app.use(helmet());
+const mongoSanitize = require('express-mongo-sanitize');
+// By default, $ and . characters are removed completely from user-supplied input in the following places:
+// - req.body
+// - req.params
+// - req.headers
+// - req.query
+
+// To sanitize data that only contains $,allowDots and replaceWith_
+// Can be useful for letting data pass that is meant for querying nested documents.
+
+app.use(
+  mongoSanitize({
+    allowDots: true,
+    replaceWith: '_',
+  }),
+);
+
 // on importe les routers
 const sauceRoutes = require("./routes/sauce");
 const userRoutes = require("./routes/user");
