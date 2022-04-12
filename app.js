@@ -32,7 +32,8 @@ const userRoutes = require("./routes/user");
 // on importe nos modèles
 const User = require("./models/user");
 
-// pour connecter l'API avec la BDD MongoDB
+// pour connecter l'API avec la BDD MongoDB // ADMIN et PWD avec ``et $ :
+// `mongodb+srv://$ADMIN:$PWD@cluster0.gwdng.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 mongoose.connect('mongodb+srv://Richa:Hallow33n@cluster0.gwdng.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
   { useNewUrlParser: true,
     useUnifiedTopology: true })
@@ -50,7 +51,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: 'http://localhost:4200'
+    origin: 'http://localhost:4200' // HOST ----------------------------------------
 }));
 
 // pour toutes les requêtes envoyées à /images, on sert ce dossier statique image
