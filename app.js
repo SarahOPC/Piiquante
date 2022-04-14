@@ -6,6 +6,8 @@ const app = express();
 const path = require("path");
 const cors = require("cors");
 
+require("dotenv").config();
+
 //sécurité
 let helmet = require('helmet');
 app.use(helmet());
@@ -33,8 +35,7 @@ const userRoutes = require("./routes/user");
 const User = require("./models/user");
 
 // pour connecter l'API avec la BDD MongoDB // ADMIN et PWD avec ``et $ :
-// `mongodb+srv://$ADMIN:$PWD@cluster0.gwdng.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
-mongoose.connect('mongodb+srv://Richa:Hallow33n@cluster0.gwdng.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+mongoose.connect(`mongodb+srv://${process.env.ADMIN}:${process.env.PWD}@cluster0.gwdng.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
@@ -51,7 +52,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: 'http://localhost:4200' // HOST ----------------------------------------
+    origin: process.env.HOST // HOST ----------------------------------------
 }));
 
 // pour toutes les requêtes envoyées à /images, on sert ce dossier statique image
