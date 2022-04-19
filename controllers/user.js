@@ -44,7 +44,7 @@ exports.login = (req, res, next) => {
                         // 1er argument : les données à encoder ie le payload
                         {userId: user._id}, // pour être sur que la requête corresponde à ce user id
                         // 2ème argument : clé secrète pour l'encodage
-                        "RANDOM_TOKEN_SECRET",
+                        'RANDOM_TOKEN_SECRET',
                         // 3ème argument : durée de validité du token
                         {expiresIn: "24h"}
                     )
