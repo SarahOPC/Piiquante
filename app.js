@@ -52,7 +52,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(cors({
-    origin: process.env.HOST // HOST ----------------------------------------
+    origin: process.env.HOST
 }));
 
 // pour toutes les requêtes envoyées à /images, on sert ce dossier statique image

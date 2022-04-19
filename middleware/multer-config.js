@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
         const name = file.originalname.split(" ").join("_"); // on remplace les espaces par des _
         const extension = MIME_TYPES[file.mimetype];
         callback(null, name); // construit le nom du fichier
-        //callback(null, name + Date.now + "." + extension); // construit le nom du fichier
+        // + Date.now pas ajouté => cf BDD
         console.log(file.mimetype);
         console.log(extension);
     }
