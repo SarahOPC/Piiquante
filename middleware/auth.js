@@ -3,6 +3,7 @@
 // et que si un user id est envoyé avec la requête, il corresponde bien avec celui encodé dans le token
 
 const jwt = require("jsonwebtoken"); // pour vérifier les tokens
+require("dotenv").config();
 
 module.exports = (req, res, next) => {
     try {
@@ -10,7 +11,7 @@ module.exports = (req, res, next) => {
         // car 1er = Bearer
         const token = req.headers.authorization.split(" ")[1];
         // puis on va décoder le token
-        const decodedToken = jwt.verify(token, "RANDOM_TOKEN_SECRET"); // on vérifie le token avec la clé secrète
+        const decodedToken = jwt.verify(token, `${process.env.TOKEN}`); // on vérifie le token avec la clé secrète
         // on récupère le userId alors retrouvé dans l'objet Js récupéré
         const userId = decodedToken.userId;
         // on attribut le userId à l'objet requête

@@ -2,6 +2,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 // permet de créer des tokens d'identification et de les vérifier
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 
 exports.signup = (req, res, next) => {
